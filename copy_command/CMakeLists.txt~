@@ -1,0 +1,40 @@
+cmake_minimum_required(VERSION 3.10)
+project(CopyCommand C)
+
+# Set the C standard
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED True)
+
+# Source files
+set(SOURCE_FILES copy_command.c)
+
+# Create an executable
+add_executable(copy_command ${SOURCE_FILES})
+
+# Enable testing
+enable_testing()
+
+# Add a test that runs the copy command with a specific input and checks the output
+add_test(
+    NAME CopyTest
+    COMMAND ${CMAKE_COMMAND} -E env $<TARGET_FILE:copy_command> test_input.txt test_output.txt
+)
+
+# Add a custom command to generate a test input file before the test runs
+add_custom_command(
+    OUTPUT test_input.txt
+    COMMAND echo "This is a test file." > test_input.txt
+    COMMENT "Generating test input file"
+)
+
+# Add a custom target that depends on the test input file
+add_custom_target(GenerateTestFile DEPENDS test_input.txt)
+
+# Ensure the test runs after the input file is generated
+add_dependencies(CopyTest GenerateTestFile)
+
+# Additional cleanup after tests
+add_test(
+    NAME CleanupTestOutput
+    COMMAND ${CMAKE_COMMAND} -E remove test_input.txt test_output.txt
+)
